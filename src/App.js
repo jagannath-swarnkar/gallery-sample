@@ -1,7 +1,6 @@
 import React from 'react';
 import './App.css'
-import { Gallery } from './components/Gallery/Gallery';
-import { Link } from "./components/Link/Link";
+import {Gallery} from './components/Gallery/Gallery';
 import galleryData from "./mockData/gallery.json"
 
 export const App = () => {
@@ -18,6 +17,7 @@ export const App = () => {
       <p>Write a component that takes a list of URLs like the one below to create a justified gallery.</p>
       <p>The component to be implemented is in <code>components/Gallery/Gallery.jsx</code></p>
       <p>The data is available in the <code>mockData/gallery.json</code></p> */}
+      {/* <Gallery data={galleryData} /> */}
       <Gallery data={galleryData} />
     </div>
   );

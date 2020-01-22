@@ -8,7 +8,9 @@
     "justified-layout": "^3.0.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
-    "react-scripts": "^3.3.0"
+    "react-fb-image-grid": "^0.1.5",
+    "react-scripts": "^3.3.0",
+    "react-simple-image-slider": "^1.0.2"
   },
   "scripts": {
     "start": "react-scripts start",

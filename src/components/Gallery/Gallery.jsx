@@ -4,122 +4,138 @@ import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
 import ViewCompactIcon from "@material-ui/icons/ViewCompact";
 import ViewComfyIcon from "@material-ui/icons/ViewComfy";
 import CloseIcon from "@material-ui/icons/Close";
-import NavigateNextIcon from '@material-ui/icons/NavigateNext';
-import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
+import NavigateNextIcon from "@material-ui/icons/NavigateNext";
+import NavigateBeforeIcon from "@material-ui/icons/NavigateBefore";
 import { useState, useEffect } from "react";
 import { Button, Card } from "@material-ui/core";
 var justifiedLayout = require("justified-layout");
+
 /*
  * Make this component
  */
 
+// different geometries for different grid
+var Geometries = [
+    [0.5,1.5,1,1.8,2.2,0.7,0.9,1.1,1.7,2,2.1,0.5,1.5,1,1.8,1.7,0.7,0.9,1.1,1.7],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [2,2,1.2,1.5,2.5,1,2,1,0.5,1.5,0.5,1,1,1,2,1,1,1.5,0.5,1.7],
+    [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+]
+
 export const Gallery = ({ data }) => {
-  const [url, setUrl] = useState(null);
-  const [img, setImg] = useState(false);
-  const [id, setId] = useState(null);
-  const [geometry, setGeometry] = useState(
-    justifiedLayout(
-      [0.5, 1.5, 1, 1.8, 2.2, 0.7, 0.9, 1.1, 1.7, 2, 2.1, 0.5, 1.5, 1, 1.8, 1.7, 0.7, 0.9, 1.1, 1.7],
-      { containerWidth: 1500 }
-    )
-  );
-  const imgClick = (url,id) => {    
-    setUrl(url);
-    setId(id)
-    setImg(true);
+  const [state, setState] = useState({
+    containerWidth: 0,
+    geometry: { boxes: [] },
+    imageUrl: [],
+    isClicked: false,
+    id: null
+  });
+
+  let resizeGeometry = () => {
+    let width = window.innerWidth - 16;
+
+    setState({
+      ...state,
+      containerWidth: width,
+      geometry: justifiedLayout(Geometries[0], {
+        containerWidth: width
+      })
+    });
   };
-  const images = data.map((e, i) => {
+
+  useEffect(() => {
+    resizeGeometry();
+    window.addEventListener("resize", resizeGeometry);
+  }, []);
+
+  // assinging new geometry while click on the grid icon
+  const newGeometry = e => {
+    let width = window.innerWidth - 16;
+    setState({
+      ...state,
+      containerWidth: width,
+      geometry: justifiedLayout(Geometries[e - 1], {
+        containerWidth: width
+      })
+    });
+  };
+
+  // on clicking an image setting state with is clicked true and id to open the full page image
+  const imageClickHandler = i => {
+    setState({
+      ...state,
+      isClicked: true,
+      id: i
+    });
+  };
+
+  // main images list
+  const images = state.geometry.boxes.map((box, i) => {
     return (
-      <div
-        onClick={(url,id) => imgClick(e.url,i)}
+      <img
+        key={i}
         className="img_div"
-        style={{
-          position: "absolute",
-          top: `${geometry.boxes[i].top}px`,
-          left: `${geometry.boxes[i].left}px`
-        }}
-      >
-        <img
-          key={i}
-          src={e.url}
-          width={`${geometry.boxes[i].width}px`}
-          height={`${geometry.boxes[i].height}px`}
-        />
-      </div>
+        src={data[i].url}
+        alt={data[i].alt}
+        left={box.left}
+        top={box.top}
+        width={box.width}
+        height={box.height}
+        onClick={e => imageClickHandler(i)}
+      />
     );
   });
 
-  const newGeometry = e => {
-    if (e === 1) {
-      setGeometry(
-        justifiedLayout(
-          [0.5, 1.5, 1, 1.8, 2.2, 0.7, 0.9, 1.1, 1.7, 2, 2.1, 0.5, 1.5, 1, 1.8, 1.7, 0.7, 0.9, 1.1, 1.7],
-          { containerWidth: 1500 }
-        )
-      );
-    } else if (e === 2) {
-      setGeometry(
-        justifiedLayout(
-          [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-          { containerWidth: 1500 }
-        )
-      );
-    } else if (e === 3) {
-      setGeometry(
-        justifiedLayout(
-          [2,2,1.2,1.5,2.5,1,2,1,0.5,1.5,0.5,1,1,1,2,1,1,1.5,0.5,1.7,1.3,2.3,0.7],
-          { containerWidth: 1500, targetRowHeight: 250 }
-        )
-      );
-    } else if (e === 4) {
-      setGeometry(
-        justifiedLayout(
-          [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
-          {
-            containerWidth: 1500,
-            targetRowHeight: 220,
-            forceAspectRatio: true,
-            showWidows: true
-          }
-        )
-      );
+  // function for shifting next image
+  const nextImage = () => {
+    if (state.id < data.length - 1) {
+      setState({
+        ...state,
+        id: state.id + 1
+      });
     }
   };
 
-  const nextImage =()=>{
-    if(id < data.length-1){
-      setUrl(data[id+1].url)
-      setId(id+1)
+  // function for shifting previous image
+  const pastImage = () => {
+    if (state.id > 0) {
+      setState({
+        ...state,
+        id: state.id - 1
+      });
     }
-  }
+  };
 
-  const pastImage =()=>{
-    if(id > 0){
-      setUrl(data[id-1].url)
-      setId(id-1)
-    }
-  }
-
-
-  if (img) {
+  // opening a particular image which is clicked(after checking)
+  if (state.isClicked) {
     return (
       <div>
-        <div style={{ marginTop: 50 }}>
-          <Card style={{padding:'10px'}}>
-            <div style={{ float: "right" }}>
-              <Button onClick={() => setImg(false)}>
-                <CloseIcon style={{ fontSize: 50 }} />
+        <Card className="card">
+          <div id="float_right">
+            <Button onClick={() => setState({ ...state, isClicked: false })}>
+              <CloseIcon id="font_70" />
+            </Button>
+          </div>
+          <div style={{ display: "flex", width: "100%" }}>
+            <div style={{ flexGrow: 1, alignSelf: "center" }}>
+              <Button onClick={pastImage}>
+                <NavigateBeforeIcon id="font_70" />
               </Button>
             </div>
-            <div style={{display:'flex'}}>
-              <div style={{flexGrow:1, alignSelf:'center'}}><Button onClick={pastImage}><NavigateBeforeIcon style={{fontSize:70}} /></Button></div>
-              <div style={{flexGrow:8}}><img src={url} width="900px" height="700px" /></div>
-              <div style={{flexGrow:1, alignSelf:'center'}}><Button onClick={nextImage}><NavigateNextIcon style={{fontSize:70}} /></Button></div>
+            <div style={{ flexGrow: 8 }}>
+              <img
+                src={data[state.id].url}
+                alt={data[state.id].alt}
+                className="clicked_image"
+              />
             </div>
-            
-            
-          </Card>
-        </div>
+            <div style={{ flexGrow: 1, alignSelf: "center" }}>
+              <Button onClick={nextImage}>
+                <NavigateNextIcon id="font_70" />
+              </Button>
+            </div>
+          </div>
+        </Card>
         <div className="main_div" style={{ position: "relative" }}>
           <div>
             <Button onClick={e => newGeometry(1)}>
@@ -142,8 +158,14 @@ export const Gallery = ({ data }) => {
   }
 
   return (
-    <div className="main_div" style={{ position: "relative" }}>
-      <div>
+    <div
+      className="main_div"
+      style={{
+        height: state.geometry.containerHeight + "px",
+        width: state.containerWidth + "px"
+      }}
+    >
+      <div className="grid_icon">
         <Button onClick={e => newGeometry(1)}>
           <ViewQuiltIcon />
         </Button>
